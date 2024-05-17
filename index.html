@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <title>Home - Article</title>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row add">
+      <button id="add-btn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+        + Ajouté un nouvel article
+      </button>
+    </div>
+    <table class="table table-hover">
+      <div class="row">
+        <div class="col table">
+          <table id="article-table" class="table table-striped">
+            <thead>
+              <tr>
+                <th>Catégorie</th>
+                <th>Nom de l'article</th>
+                <th>Prix</th>
+                <th style="text-align: end;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="article-list">
+              <tr id="empty-row">
+                <td colspan="4">Liste vide</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </table>
+  </div>
+
+  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">Ajouter un article</h5>
+        </div>
+        <div class="modal-body">
+          <form id="form" novalidate>
+            <div class="mb-3">
+              <label for="name" class="form-label">Nom de l'article</label>
+              <input type="text" class="form-control" id="name" placeholder="Nom de l'article" required>
+            </div>
+            <div class="mb-3">
+              <label for="select-opt" class="form-label">Catégorie</label>
+              <select id="select-opt" class="form-select" required>
+                <option value="" disabled selected>--Choisir--</option>
+                <option>Fruits et légumes</option>
+                <option>Produits laitiers</option>
+                <option>Viandes et poissons</option>
+                <option>Boissons</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="prix1" class="form-label">Prix</label>
+              <input type="number" class="form-control" id="prix1" placeholder="Entrer le prix" required>
+            </div>
+            <div class="mb-3">
+              <button id="edit" class="btn btn-block btn-primary" style="display: none;">Enregistrer</button>
+              <button id="save" class="btn btn-block btn-primary save-btn">Enregistrer</button>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary cancel" data-bs-dismiss="modal"
+            aria-label="Close">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="deleteModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Supprimer cet article</h5>
+        </div>
+        <div class="modal-body">
+          <span class="mx-3 article-name"></span>
+          <span class="mx-3 article-id" hidden></span>
+        </div>
+        <div class="modal-footer" style="border-top: none;">
+          <button type="button" class="btn btn-primary remove-product" style="width: 100%;">Suprimmer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+  <script src="javascript/script.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    (() => {
+      function loaddata(products_list) {
+        $("tbody").empty();
+        if (products_list.length <= 0) {
+          $("tbody").append(`
+            <tr id="empty-row">
+              <td colspan="4">Liste vide</td>
+            </tr>
+          `);
+        } else {
+          products_list.map((obj, idx) => {
+            $("tbody").append(`
+              <tr id="empty-row">
+                <th hidden scope="row" class="id">${obj["id"]}</th>
+                <th scope="row" class="categorie">${obj["categorie"]}</th>
+                <td class="name">${obj["name"]} </td>
+                <td class="prix">${obj["prix"]}</td>
+                <td style="text-align: end">
+                  <i id="modif" class="bi bi-pencil" style="color: blue"></i>
+                  <i id=delet class="bi bi-trash mx-4" style="color: red" data-bs-toggle="modal" data-bs-target="#deleteModal"></i>
+                </td>
+              </tr>
+            `);
+          });
+        }
+      }
+
+      const products = [];
+
+      $("#form").on("submit", function (event) {
+        event.preventDefault();
+
+        const form = this;
+
+        if (form.checkValidity()) {
+          const name = $("#name").val();
+          const categorie = $("#select-opt").val();
+          const prix = $("#prix1").val();
+          const data = { id: products.length + 1, name: name, categorie: categorie, prix: prix };
+
+          products.push(data);
+          loaddata(products);
+
+          $("#name").val('');
+          $("#prix1").val('');
+          $("#staticBackdrop").modal('hide');
+        } else {
+          event.stopPropagation();
+          form.classList.add('was-validated');
+        }
+      });
+
+      $(document).on('click', '.bi-trash', function () {
+        let row = $(this).closest('tr');
+        let name = row.find('.name').text();
+        let id = row.find('.id').text();
+        $(".article-name").text(`Nom de l'article: ${name}`);
+        $(".article-id").text(`${id}`);
+      });
+
+      $(".remove-product").on('click', function removeItem(name) {
+        let item_id = $(".article-id").text();
+        $.each(products, function (i, el) {
+          if (this.id == item_id) {
+            products.splice(i, 1);
+            loaddata(products);
+            $('#deleteModal').modal('hide');
+          }
+        });
+      });
+
+      $(document).on('click', '.bi-pencil', function () {
+        $('#save').hide();
+        $('#edit').show();
+
+        let row = $(this).closest('tr');
+        let id = row.find('.id').text();
+        let name = row.find('.name').text();
+        let categorie = row.find('.categorie').text();
+        let prix = row.find('.prix').text();
+
+        $('#staticBackdropLabel').text('Modifier un article');
+        $('#select-opt').val(categorie);
+        $('#name').val(name);
+        $('#prix1').val(prix);
+
+        $('#staticBackdrop').modal('show');
+
+        $('#edit').off('click').on('click', function (event) {
+          event.preventDefault();
+
+          $.each(products, function (i, el) {
+            if (this.id == id) {
+              this.categorie = $("#select-opt").val();
+              this.name = $("#name").val();
+              this.prix = $("#prix1").val();
+              loaddata(products);
+
+              $('#save').show();
+              $('#edit').hide();
+              $('#staticBackdropLabel').text('Ajouter un article');
+              $("#name").val('')
+              $("#prix1").val('')
+              $('#staticBackdrop').modal('hide');
+            }
+          });
+        });
+      });
+    })()
+  </script>
+</body>
+
+</html>
